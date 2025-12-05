@@ -1,0 +1,346 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AudioInput {
+  slug: String!
+  taskIndex: Float!
+  taskNumber: Float!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
+  oldPassword: String!
+}
+
+input ChangePasswordRecoveryInput {
+  email: String!
+  newPassword: String!
+}
+
+input CreateAnswerInput {
+  questionId: String!
+  userAnswer: String!
+}
+
+type CreateAnswerModel {
+  isCorrect: IsCorrectType!
+}
+
+input CreateQuestionInput {
+  correctAnswer: [String!]!
+  experience: Float!
+  explanation: String
+  question: String!
+  subjectName: String!
+  taskNumber: Float!
+  text: String!
+}
+
+input CreateSubjectInput {
+  name: String!
+  slug: String!
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+}
+
+input CreateUserVariantInput {
+  selections: [TaskSelectionInput!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DeactivateUserInput {
+  channel: String
+  tokenValue: String!
+}
+
+type DeviceModel {
+  browser: String!
+  os: String!
+  type: String!
+}
+
+input FindIncorrectQuestionsByTaskNumberInput {
+  slug: String!
+  taskNumber: Float!
+}
+
+input FindIncorrectQuestionsInput {
+  slug: String!
+}
+
+type FindIncorrectQuestionsModel {
+  answer: String!
+  createdAt: DateTime!
+  id: String!
+  isCorrect: Boolean!
+  question: QuestionModel!
+  questionId: String!
+  subjectSlug: String!
+  updatedAt: DateTime!
+  userId: String!
+}
+
+type FindMeModel {
+  isAuth: Boolean!
+  user: UserModel
+}
+
+input FindQuestionsByTaskNumberInput {
+  skip: Float!
+  slug: String!
+  take: Float!
+  taskNumber: Float!
+}
+
+input FindTaskCountInput {
+  slug: String!
+  taskNumber: Float!
+}
+
+input GeneratePasswordRecoveryTokenInput {
+  email: String!
+}
+
+type GetAllStatisticModel {
+  correctPercent: Int!
+  totalAnswer: Int!
+  totalCorrectAnswer: Int!
+}
+
+type GetSignedUrlModel {
+  explanationImageUrls: [String!]!
+  globalImageUrls: [String!]!
+  imageUrls: [String!]!
+}
+
+input GetTasksStatisticInput {
+  subjectSlug: String!
+}
+
+input ImageInput {
+  explanationKeys: [String!]!
+  globalImages: [String!]!
+  imagesKeys: [String!]!
+}
+
+enum IsCorrectType {
+  FULL
+  NOCORRECT
+  PARTIAL
+  WRONG
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type LocationModel {
+  city: String!
+  country: String!
+  latidute: Float!
+  longitude: Float!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type LoginModel {
+  message: String
+  requireTotp: Boolean
+  success: Boolean
+  userId: String
+}
+
+input LoginTotpInput {
+  token: String!
+  userId: String!
+}
+
+type Mutation {
+  ChangeEmail(email: String!): Boolean!
+  ChangePassword(data: ChangePasswordInput!): Boolean!
+  ChangePasswordRecovery(data: ChangePasswordRecoveryInput!): String!
+  CreateAnswer(data: CreateAnswerInput!): CreateAnswerModel!
+  CreateQuestion(data: CreateQuestionInput!): Boolean!
+  CreateSubject(data: CreateSubjectInput!): Boolean!
+  CreateUser(data: CreateUserInput!): Boolean!
+  CreateUserVariant(data: CreateUserVariantInput!): String!
+  DeactivateUser(data: DeactivateUserInput!): Boolean!
+  DisableTotp: Boolean!
+  GenerateDeactivateTokenByEmail: Boolean!
+  GenerateDeactivateTokenByTelegram: Boolean!
+  GeneratePasswordRecoveryToken(data: GeneratePasswordRecoveryTokenInput!): String!
+  GenerateTelegramConnectionToken: String!
+  GenerateTotpSecret: String!
+  Login(data: LoginInput!): LoginModel!
+  LoginTotp(data: LoginTotpInput!): Boolean!
+  Logout: Boolean!
+  RemoveSession(id: String!): Boolean!
+  RemoveUserVariantById(variantId: Int!): Boolean!
+  ToggleFavoriteSubject(data: ToggleFavoriteSubjectInput!): Boolean!
+  VerifyPasswordRecoveryToken(data: VerifyPasswordRecoveryTokenInput!): String!
+  VerifyTotp(data: TotpInput!): Boolean!
+}
+
+type Query {
+  FindAllSubjects: [SubjectModel!]!
+  FindAllUsers: [UserModel!]!
+  FindCurrentSession: SessionModel!
+  FindFavoriteSubjects: [SubjectModel!]!
+  FindIncorrectQuestions(data: FindIncorrectQuestionsInput!): [FindIncorrectQuestionsModel!]!
+  FindIncorrectQuestionsByTaskNumber(data: FindIncorrectQuestionsByTaskNumberInput!): [QuestionModel!]!
+  FindMe: FindMeModel!
+  FindRandomQuestions(data: FindQuestionsByTaskNumberInput!): [QuestionModel!]!
+  FindSessionsByUser: [SessionModel!]!
+  FindSubjectBySlug(slug: String!): [TaskModel!]!
+  FindTaskCount(data: FindTaskCountInput!): Float!
+  FindUserVariantAll: [UserVariantModel!]!
+  FindUserVariantById(variantId: Int!): UserVariantModel!
+  GetAllStatistic: GetAllStatisticModel!
+  GetAudioUrl(data: AudioInput!): String!
+  GetImageUrl(data: ImageInput!): GetSignedUrlModel!
+  GetSubjectsStatistic: [SubjectsStatisticModel!]!
+  GetTasksStatistic(data: GetTasksStatisticInput!): [TasksStatisticModel!]!
+}
+
+type QuestionModel {
+  audioPath: String
+  correctAnswer: [String!]
+  createdAt: DateTime!
+  experience: Float
+  explanation: String
+  explanationImages: [String!]!
+  globalImages: [String!]!
+  hasCorrectAnswer: Boolean!
+  id: String!
+  imagePath: String
+  images: [String!]!
+  intro: String
+  partialAllowed: Boolean!
+  partialThreshold: Float
+  question: String
+  speakers: JSON
+  statements: [String!]
+  subQuestions: JSON
+  subject: SubjectModel!
+  subjectId: String!
+  tableSpec: JSON
+  task: TaskModel!
+  taskId: String!
+  text: String
+  type: String
+  updatedAt: DateTime!
+}
+
+type SessionMetadataModel {
+  device: DeviceModel!
+  ip: String!
+  location: LocationModel!
+}
+
+type SessionModel {
+  createdAt: DateTime!
+  id: String!
+  metadata: SessionMetadataModel!
+}
+
+type SubjectModel {
+  createdAt: DateTime!
+  id: String!
+  name: String!
+  questions: [QuestionModel!]!
+  questionsCount: Float!
+  slug: String!
+  tasks: [TaskModel!]!
+  tasksCount: Float!
+  updatedAt: DateTime!
+}
+
+type SubjectsStatisticModel {
+  answered: Int!
+  correct: Int!
+  correctPercent: Float!
+  subjectName: String!
+  subjectSlug: String!
+  totalQuestions: Int!
+}
+
+type TaskModel {
+  createdAt: DateTime!
+  id: String!
+  questions: [QuestionModel!]!
+  questionsCount: Float!
+  subjectId: String!
+  taskNumber: Float!
+  updatedAt: DateTime!
+}
+
+input TaskSelectionInput {
+  count: Float!
+  slug: String!
+  taskNumber: Float!
+}
+
+type TasksStatisticModel {
+  answered: Int!
+  correct: Int!
+  correctPercent: Float!
+  taskNumber: Int!
+  totalQuestions: Int!
+}
+
+input ToggleFavoriteSubjectInput {
+  slug: String!
+}
+
+input TotpInput {
+  token: String!
+}
+
+type UserModel {
+  avatar: String
+  createdAt: DateTime!
+  email: String!
+  experience: Float!
+  id: String!
+  isDeactivated: Boolean!
+  isTwoFactor: Boolean!
+  password: String!
+  rating: UserRating!
+  telegramId: String
+  tempTotpSecret: String
+  totpSecret: String
+  updatedAt: DateTime!
+}
+
+enum UserRating {
+  ADVANCED
+  BEGINNER
+  EXPERT
+  INTERMEDIATE
+}
+
+type UserVariantModel {
+  createdAt: DateTime!
+  id: Float!
+  questions: [QuestionModel!]!
+  updatedAt: DateTime!
+  user: UserModel!
+  userId: String!
+}
+
+input VerifyPasswordRecoveryTokenInput {
+  email: String!
+  tokenValue: String!
+}

@@ -1,0 +1,219 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URI")
+}
+
+model User {
+  id String @id @default(uuid(4))
+
+  email String @unique
+  password String 
+
+  experience Int @default(0) //Количество опыта
+  rating UserRating @default(BEGINNER) //Ранг пользователя
+  isDeactivated Boolean @default(false) @map("is_deactivated")
+  avatar String?
+  favoriteSubjects Subject[] @relation("UserFavorites")
+
+  telegramId String? @map("telegram_id") @unique
+
+  isTwoFactor Boolean @default(false) @map("is_two_factor")
+  totpSecret String? @map("totp_secret")
+  tempTotpSecret String? @map("temp_totp_secret")
+
+  variant UserVariant[] // один вариант на пользователя
+  answers   UserAnswer[]
+  tokens Token[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Question {
+  id String @id @default(uuid())
+  subjectId String
+  taskId String
+  task Task @relation(fields: [taskId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  // Тип вопроса: text | audio-matching
+  type String @default("text")
+
+  // === базовые поля ===
+  text String?       // для текстовых задач
+  question String?  // краткая формулировка
+  experience Int   // опыт за задачу
+  correctAnswer String[] @map("correct_answer")
+  partialAllowed Boolean @default(false)          // можно ли частично засчитывать
+  partialThreshold Int?                           // сколько правильных цифр нужно для частичного зачета
+  explanation String?
+  hasCorrectAnswer Boolean @default(true) @map("has_correct_answer")
+
+  // === аудио/табличные поля ===
+  audioPath String? @map("audio_path")
+  imagePath String? @map("image_path")
+  intro String?    // для EngAudioTask
+  speakers Json?   // массив объектов { letter: string, transcript: string }
+  statements Json? // массив строк
+  tableSpec Json?  // таблица (если есть)
+
+  images String[]  // массив URL
+  explanationImages String[] // массив URL
+  globalImages String[] // массив URL
+
+  subQuestions Json?
+
+  answers UserAnswer[]
+  selectedInVariants UserVariantQuestion[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("questions")
+}
+
+
+
+model Subject{
+  id String @id @default(uuid(4))
+  name String @unique
+  slug String @unique
+
+  tasksCount Int @default(0)
+  questionsCount Int @default(0)
+
+  questions Question[]
+
+  users  User[]  @relation("UserFavorites")
+
+  tasks     Task[]   // связь 1 ко многим
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("subjects")
+}
+
+
+model UserAnswer {
+  id String @id @default(uuid(4))
+  userId      String
+  questionId  String
+
+  answer  String   // то, что ввёл пользователь
+  isCorrect   IsCorrectType  // Правильно или нет ответил пользователь
+  subjectSlug String
+
+  // Связи
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_answers")
+}
+
+model UserQuestionSeed {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  subjectId  String
+  taskNumber Int
+  order      String[]    // массив id вопросов в перемешанном порядке
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, taskNumber, subjectId]) // чтобы для каждого пользователя был один seed на задание
+}
+
+model Task {
+  id          String      @id @default(uuid(4))
+  taskNumber  Int          // Номер задания (1, 2, 3 ...)
+  subjectId   String
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  questions   Question[]   // Список вопросов этого задания
+  questionsCount   Int @default(0) // Список вопросов этого задания
+  createdAt   DateTime @default(now()) @map("created_at")
+}
+
+model UserVariant {
+  id Int @id @default(autoincrement())
+  userId String // один вариант на пользователя (если нужно только один)
+  user User @relation(fields: [userId], references: [id])
+
+  questions UserVariantQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserVariantQuestion {
+  id String @id @default(uuid())
+  variantId Int
+  questionId String
+
+  variant UserVariant @relation(fields: [variantId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  order Int? // опционально, чтобы хранить порядок вопросов
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([variantId, questionId])
+}
+
+model Token {
+  id String @id @default(uuid())
+  userId String
+
+  used Boolean @default(false)
+  expiresAt DateTime?
+
+  tokenValue String
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type TokenType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+
+enum TokenType {
+  TELEGRAM   
+  EMAIL 
+  DEACTIVATE
+  PASSWORD_RECOVERY
+
+  @@map("token_type")
+}
+
+enum UserRating {
+  BEGINNER    // Новичок
+  INTERMEDIATE // Продвинутый
+  ADVANCED     // Опытный
+  EXPERT       // Эксперт (опционально)
+
+  @@map("user_rating")
+}
+
+enum IsCorrectType {
+  FULL
+  PARTIAL
+  WRONG
+  NOCORRECT
+}
